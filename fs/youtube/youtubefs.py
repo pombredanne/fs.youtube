@@ -41,11 +41,11 @@ class YoutubeFS(FS):
 
     def _get_name(self, pafyobj):
         return '%s.%s'%(pafyobj.title,pafyobj.getbest().extension)
-        
-    def listdir(self,path):
+
+    def listdir(self, path):
         _path = self.validatepath(path)
 
-        if _path in [u'', u'.', u'/', u'./']:
+        if _path in [u'.', u'/', u'./']:
             parser = pafy.get_playlist(self.url)
             outlist = []
             for entry in parser['items']:
@@ -54,13 +54,15 @@ class YoutubeFS(FS):
                 outlist.append(u'%s' % name)
             return outlist
         else:
-            raise errors.ResourceNotFound(path)
-            
+            if _path in self._cache:
+                raise errors.DirectoryExpected(path)
+            else:
+                raise errors.ResourceNotFound(path)
+
     def getinfo(self, path, namespaces=None):
         _path = self.validatepath(path)
         namespaces = namespaces or ('basic')
 
-        print('getinfo', path, namespaces)
         if _path in [u'', u'.', u'/', u'./']:
 
             info = Info({
@@ -74,22 +76,19 @@ class YoutubeFS(FS):
                     "type": int(ResourceType.directory)
                 }
                 })
-            print(info)
             return info
-                
         else:
-
             if _path in self._cache:
+                name = _path[1:]
                 pafyobj = pafy.new(self._cache[_path])
                 if not 'details' in namespaces:
                     info = Info({
                         "basic":
                         {
-                            "name": pafyobj.title,
+                            "name": name,
                             "is_dir": False
                         }})
                 else:
-
                     stream = pafyobj.getbest()
                     info = Info({
                         "basic":
@@ -103,16 +102,19 @@ class YoutubeFS(FS):
                             "size":stream.get_filesize(),
                         }
                         })
-                print(info)
                 return info
             else:
-                print('not found', _path, self._cache)
-
-        raise errors.ResourceNotFound(path)
+                raise errors.ResourceNotFound(path)
 
     def openbin(self, path, mode=u'r', *args, **kwargs):
         _path = self.validatepath(path)
-        
+
+        if mode == 'rt':
+            raise ValueError('rt mode not supported in openbin')
+
+        if mode == 'h':
+            raise ValueError('h mode not supported in openbin')
+
         if not 'r' in mode:
             raise errors.Unsupported()
 
@@ -133,14 +135,14 @@ class YoutubeFS(FS):
         response.seekable = seekable
         return response
 
-    def makedir(self,*args,**kwargs):
+    def makedir(self, *args, **kwargs):
         raise errors.Unsupported()
 
-    def remove(self,*args,**kwargs):
+    def remove(self, *args, **kwargs):
         raise errors.Unsupported()
 
-    def removedir(self,*args,**kwargs):
+    def removedir(self, *args, **kwargs):
         raise errors.Unsupported()
 
-    def setinfo(self,*args,**kwargs):
+    def setinfo(self, *args, **kwargs):
         raise errors.Unsupported()
