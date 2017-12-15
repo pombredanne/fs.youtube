@@ -1,6 +1,7 @@
 #~ # coding: utf-8
 from __future__ import absolute_import
 from __future__ import unicode_literals
+from __future__ import with_statement
 
 import pafy
 from six.moves.urllib.request import urlopen
@@ -9,6 +10,7 @@ from .. import errors
 from ..base import FS
 from ..enums import ResourceType
 from ..info import Info
+from ..iotools import RawWrapper
 
 
 class YoutubeFS(FS):
@@ -40,7 +42,10 @@ class YoutubeFS(FS):
         return 'YoutubeFS: %s' % self._title
 
     def _get_name(self, pafyobj):
-        return '%s.%s'%(pafyobj.title,pafyobj.getbest().extension)
+        name = '%s.%s' % (pafyobj.title, pafyobj.getbest().extension)
+        name.replace('/', '')
+        name.replace('\\', '')
+        return name
 
     def listdir(self, path):
         _path = self.validatepath(path)
@@ -124,16 +129,38 @@ class YoutubeFS(FS):
             response = urlopen(url)
         except:
             raise errors.ResourceNotFound(path)
-        
-        def writable():
-            return False
-        
-        def seekable():
-            return False
-            
-        response.writable = writable
-        response.seekable = seekable
-        return response
+
+        class HTTPFile(RawWrapper):
+
+            def writable(self):
+                return False
+
+            def seekable(self):
+                return False
+
+            def flush(self):
+                return
+
+        # if six.PY2:
+        #     def __enter__():
+        #         return response
+        #
+        #     def __exit__(*args):
+        #         response.close()
+        #
+        #     response.__enter__ = __enter__
+        #     response.__exit__ = __exit__
+        #
+        # def writable():
+        #     return False
+        #
+        # def seekable():
+        #     return False
+        #
+        # response.writable = writable
+        # response.seekable = seekable
+
+        return HTTPFile(response, mode=mode, *args, **kwargs)
 
     def makedir(self, *args, **kwargs):
         raise errors.Unsupported()
