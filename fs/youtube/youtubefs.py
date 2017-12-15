@@ -2,17 +2,14 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-import io
 import pafy
-# ~ import urllib2
 from six.moves.urllib.request import urlopen
+
 from .. import errors
 from ..base import FS
-from ..info import Info
-from ..mode import Mode
-from ..path import join, dirname, split
 from ..enums import ResourceType
-from ..permissions import Permissions
+from ..info import Info
+
 
 class YoutubeFS(FS):
     
@@ -22,6 +19,7 @@ class YoutubeFS(FS):
         url (str): The YouTube URL for a Playlist or a Video
 
     """
+
     _meta = {
         'case_insensitive': False,
         'invalid_path_chars': '\0"\[]+|<>=;?*',
