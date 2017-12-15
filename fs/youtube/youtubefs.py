@@ -30,7 +30,6 @@ class YoutubeFS(FS):
         'virtual': False,
     }
 
-
     def __init__(self, url):
         super(YoutubeFS, self).__init__()
         self.url = url
@@ -38,22 +37,21 @@ class YoutubeFS(FS):
         self._title = pafy.get_playlist(self.url)['title']
 
     def __str__(self):
-        return 'YoutubeFS: %s'%self._title
-    
-    
-    def _get_name(self,pafyobj):
+        return 'YoutubeFS: %s' % self._title
+
+    def _get_name(self, pafyobj):
         return '%s.%s'%(pafyobj.title,pafyobj.getbest().extension)
         
     def listdir(self,path):
         _path = self.validatepath(path)
 
-        if _path in [u'',u'.',u'/',u'./']:
+        if _path in [u'', u'.', u'/', u'./']:
             parser = pafy.get_playlist(self.url)
             outlist = []
             for entry in parser['items']:
                 name = self._get_name(entry['pafy'])
-                self._cache[self.validatepath(u'/%s'%name)] = entry['playlist_meta']['encrypted_id']
-                outlist.append(u'%s'%name)
+                self._cache[self.validatepath(u'/%s' % name)] = entry['playlist_meta']['encrypted_id']
+                outlist.append(u'%s' % name)
             return outlist
         else:
             raise errors.ResourceNotFound(path)
@@ -61,9 +59,9 @@ class YoutubeFS(FS):
     def getinfo(self, path, namespaces=None):
         _path = self.validatepath(path)
         namespaces = namespaces or ('basic')
-        
-        print('getinfo',path, namespaces)
-        if _path in [u'',u'.',u'/',u'./']:
+
+        print('getinfo', path, namespaces)
+        if _path in [u'', u'.', u'/', u'./']:
 
             info = Info({
                 "basic":
@@ -108,11 +106,11 @@ class YoutubeFS(FS):
                 print(info)
                 return info
             else:
-                print('not found',_path,self._cache)
+                print('not found', _path, self._cache)
 
         raise errors.ResourceNotFound(path)
 
-    def openbin(self, path, mode=u'r',*args,**kwargs):
+    def openbin(self, path, mode=u'r', *args, **kwargs):
         _path = self.validatepath(path)
         
         if not 'r' in mode:
@@ -132,15 +130,17 @@ class YoutubeFS(FS):
             return False
             
         response.writable = writable
-        response.seekable = seekable            
+        response.seekable = seekable
         return response
-
 
     def makedir(self,*args,**kwargs):
         raise errors.Unsupported()
+
     def remove(self,*args,**kwargs):
         raise errors.Unsupported()
+
     def removedir(self,*args,**kwargs):
         raise errors.Unsupported()
+
     def setinfo(self,*args,**kwargs):
         raise errors.Unsupported()

@@ -8,13 +8,11 @@ from fs.youtube import *
 
 class TestYoutubeFS(unittest.TestCase):
 
-
     def make_fs(self):
         # Return an instance of your FS object here
         url = u'https://www.youtube.com/playlist?list=PLYlZ5VtcfgitfPyMGkZsYkhLm-eOZeQpY'
         self.url = url
         return YoutubeFS(url)
-
 
     def destroy_fs(self, fs):
         """
