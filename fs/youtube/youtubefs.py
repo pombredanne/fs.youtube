@@ -22,7 +22,6 @@ class YoutubeFS(FS):
         url (str): The YouTube URL for a Playlist or a Video
 
     """
-
     _meta = {
         'case_insensitive': False,
         'invalid_path_chars': '\0"\[]+|<>=;?*',
