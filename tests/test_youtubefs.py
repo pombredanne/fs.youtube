@@ -3,26 +3,6 @@ from __future__ import unicode_literals
 
 import unittest
 
-import collections
-from datetime import datetime
-import io
-import itertools
-import json
-import math
-import os
-import time
-import fs
-import fs.copy
-import fs.move
-from fs import ResourceType, Seek
-from fs import errors
-from fs import walk
-from fs.opener import open_fs
-from fs.subfs import ClosingSubFS, SubFS
-
-import pytz
-import six
-from six import text_type
 from fs.youtube import *
 
 
