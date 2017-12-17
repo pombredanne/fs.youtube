@@ -166,16 +166,6 @@ class TestYoutubeFS(unittest.TestCase):
         # invoke the code
         self.fs.getinfo(testfile, namespaces=['access', 'stat', 'details'])
 
-    # def test_getinfo(self):
-    #     files = self.fs.listdir(u'/')
-    #     info = self.fs.getinfo(files[0])
-    #     info = self.fs.getinfo(files[0],['basic','default'])
-
-    # def test_openbin(self):
-    #     files = self.fs.listdir(u'/')
-    #     fileobj = self.fs.openbin(files[0])
-    #     assert len(fileobj.read(100)) == 100
-
     def test_openbin(self):
         testfile = self.fs.listdir(u'/')[0]
 
@@ -210,3 +200,11 @@ class TestYoutubeFS(unittest.TestCase):
         # Opening with a invalid mode
         with self.assertRaises(ValueError):
             self.fs.openbin('foo.bin', 'h')
+
+class TestYoutubeFS_Single(TestYoutubeFS):
+
+    def make_fs(self):
+        # Return an instance of your FS object here
+        url = u'https://www.youtube.com/watch?v=cpPG0bKHYKc'
+        self.url = url
+        return YoutubeFS(url, playlist=False)

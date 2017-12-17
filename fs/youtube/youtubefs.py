@@ -32,11 +32,15 @@ class YoutubeFS(FS):
         'virtual': False,
     }
 
-    def __init__(self, url):
+    def __init__(self, url, playlist=True):
         super(YoutubeFS, self).__init__()
+        self.playlist = playlist
         self.url = url
         self._cache = {}
-        self._title = pafy.get_playlist(self.url)['title']
+        if playlist:
+            self._title = pafy.get_playlist(self.url)['title']
+        else:
+            self._title = pafy.new(self.url).title
 
     def __str__(self):
         return 'YoutubeFS: %s' % self._title
@@ -51,13 +55,19 @@ class YoutubeFS(FS):
         _path = self.validatepath(path)
 
         if _path in [u'.', u'/', u'./']:
-            parser = pafy.get_playlist(self.url)
-            outlist = []
-            for entry in parser['items']:
-                name = self._get_name(entry['pafy'])
-                self._cache[self.validatepath(u'/%s' % name)] = entry['playlist_meta']['encrypted_id']
-                outlist.append(u'%s' % name)
-            return outlist
+            if self.playlist:
+                parser = pafy.get_playlist(self.url)
+                outlist = []
+                for entry in parser['items']:
+                    name = self._get_name(entry['pafy'])
+                    self._cache[self.validatepath(u'/%s' % name)] = entry['playlist_meta']['encrypted_id']
+                    outlist.append(u'%s' % name)
+                return outlist
+            else:
+                parser = pafy.new(self.url)
+                name = self._get_name(parser)
+                self._cache[self.validatepath(u'/%s' % name)] = self.url
+                return [name]
         else:
             if _path in self._cache:
                 raise errors.DirectoryExpected(path)
@@ -140,25 +150,6 @@ class YoutubeFS(FS):
 
             def flush(self):
                 return
-
-        # if six.PY2:
-        #     def __enter__():
-        #         return response
-        #
-        #     def __exit__(*args):
-        #         response.close()
-        #
-        #     response.__enter__ = __enter__
-        #     response.__exit__ = __exit__
-        #
-        # def writable():
-        #     return False
-        #
-        # def seekable():
-        #     return False
-        #
-        # response.writable = writable
-        # response.seekable = seekable
 
         return HTTPFile(response, mode=mode, *args, **kwargs)
 
